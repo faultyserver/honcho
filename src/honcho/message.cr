@@ -1,4 +1,4 @@
-module Super
+module Honcho
   struct Message
     enum Event
       STARTED
