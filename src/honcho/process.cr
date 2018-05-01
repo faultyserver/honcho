@@ -1,4 +1,4 @@
-module Super
+module Honcho
   struct Process
     property name : String
     property supervisor : Channel(Message)

@@ -1,6 +1,6 @@
-require "./supervisor/*"
+require "./honcho/*"
 
-module Super
+module Honcho
   class Visor
     property children : Hash(String, Process)
     property bus : Channel(Message)
@@ -44,7 +44,7 @@ module Super
 end
 
 
-sv = Super::Visor.new
+sv = Honcho::Visor.new
 
 sv.start_supervised("sleep then raise") do
   sleep(2)

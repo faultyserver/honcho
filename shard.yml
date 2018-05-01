@@ -1,4 +1,6 @@
-name: supervisor
+name: honcho
 version: 0.0.1
+description: |
+  A fiber/process supervisor for Crystal, inspired by Erlang/Elixir's supervisor module.
 authors:
   - Jon Egeland <jonegeland@gmail.com>
