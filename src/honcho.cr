@@ -8,7 +8,6 @@ module Honcho
     def initialize
       @children = {} of String => Process
       @bus = Channel(Message).new
-      spawn(run)
     end
 
 
@@ -25,19 +24,9 @@ module Honcho
     def run
       loop do
         message = @bus.receive
-        puts message.inspect
         handle_event(@children[message.owner], message.event)
-        Fiber.yield
       end
     end
-
-
-    # Keep the parent process alive by infinitely looping, but always yielding
-    # immediately.
-    def keep_alive
-      loop{ Fiber.yield }
-    end
-
 
     private def handle_event(process : Process, event : Message::Event)
       case event
@@ -56,19 +45,23 @@ end
 
 
 sv = Honcho::Visor.new
+channel = Channel(Int32).new(4)
 
-sv.start_supervised("permanent with raise", Honcho::Process::Mode::PERMANENT) do
-  sleep(2)
-  raise "forced broken"
+sv.start_supervised("provider", Honcho::Process::Mode::PERMANENT) do
+  i = 0
+  loop do
+    i += 1
+    puts "producer sent #{i}"
+    channel.send(i)
+  end
 end
 
-sv.start_supervised("one shot with raise", Honcho::Process::Mode::ONE_SHOT) do
-  sleep(3)
-  raise "forced broken"
+4.times do |n|
+  sv.start_supervised("consumer#{n}", Honcho::Process::Mode::PERMANENT) do
+    i = channel.receive
+    puts "consumer#{n} received #{i}"
+    sleep(1)
+  end
 end
 
-sv.start_supervised("permanent no raise", Honcho::Process::Mode::PERMANENT) do
-  sleep(3)
-end
-
-sv.keep_alive
+sv.run
