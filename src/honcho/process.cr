@@ -17,16 +17,25 @@ module Honcho
     property mode : Mode
     property proc : ->
     property fiber : Fiber?
+    property? alive : Bool
 
     def initialize(@name : String, @supervisor : Channel(Message), @mode : Mode = Mode::PERMANENT, &@proc : ->)
+      @alive = true
+    end
+
+    def kill
+      @fiber.try(&.kill)
     end
 
     def run
       @fiber = spawn do
+        @alive = true
         @supervisor.send(Message.started(@name))
         @proc.call
+        @alive = false
         @supervisor.send(Message.finished(@name))
-      rescue
+      rescue ex
+        @alive = false
         @supervisor.send(Message.exception(@name))
       end
     end

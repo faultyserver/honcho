@@ -1,5 +1,44 @@
 require "./honcho/*"
 
+class Fiber
+  property? alive : Bool = true
+
+  def kill
+    @alive = false
+  end
+
+  def resume : Nil
+    if !alive?
+      remove
+      return
+    end
+
+    previous_def
+  end
+
+  protected def remove
+    @@stack_pool << @stack
+
+    # Remove the current fiber from the linked list
+    if prev_fiber = @prev_fiber
+      prev_fiber.next_fiber = @next_fiber
+    else
+      @@first_fiber = @next_fiber
+    end
+
+    if next_fiber = @next_fiber
+      next_fiber.prev_fiber = @prev_fiber
+    else
+      @@last_fiber = @prev_fiber
+    end
+
+    # Delete the resume event if it was used by `yield` or `sleep`
+    @resume_event.try &.free
+
+    Scheduler.reschedule
+  end
+end
+
 module Honcho
   class Visor
     property children : Hash(String, Process)
@@ -35,33 +74,17 @@ module Honcho
           process.run
         end
       when .exception?
-        if process.mode.permanent? || process.mode.transient?
-          process.run
+        puts "Got exception from #{process.name}"
+        # if process.mode.permanent? || process.mode.transient?
+        #   process.run
+        # end
+
+        @children.each do |_, p|
+          next if p == process
+          puts "#{p.name}: #{p.alive?}"
+          p.kill if p.alive?
         end
       end
     end
   end
 end
-
-
-sv = Honcho::Visor.new
-channel = Channel(Int32).new(4)
-
-sv.start_supervised("provider", Honcho::Process::Mode::PERMANENT) do
-  i = 0
-  loop do
-    i += 1
-    puts "producer sent #{i}"
-    channel.send(i)
-  end
-end
-
-4.times do |n|
-  sv.start_supervised("consumer#{n}", Honcho::Process::Mode::PERMANENT) do
-    i = channel.receive
-    puts "consumer#{n} received #{i}"
-    sleep(1)
-  end
-end
-
-sv.run
