@@ -3,11 +3,15 @@ module Honcho
     property name : String
     property supervisor : Channel(Message)
     property mode : ProcessMode
+    # Number of seconds to wait before restarting this process
+    property restart_delay : Float64
     property proc : ->
     property fiber : Fiber?
     property? alive : Bool
 
-    def initialize(@name : String, @supervisor : Channel(Message), @mode : ProcessMode = ProcessMode::PERMANENT, &@proc : ->)
+    def initialize(@name : String, @supervisor : Channel(Message), **options, &@proc : ->)
+      @mode = options[:mode]? || ProcessMode::PERMANENT
+      @restart_delay = (options[:delay]? || 0.0).to_f64
       @alive = true
     end
 

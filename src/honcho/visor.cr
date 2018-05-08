@@ -21,9 +21,9 @@ module Honcho
     end
 
 
-    def start_supervised(name : String, mode : ProcessMode = ProcessMode::PERMANENT, &block)
+    def start_supervised(name : String, **options, &block)
       @children[name] = begin
-        p = Process.new(name, bus, mode, &block)
+        p = Process.new(name, bus, **options, &block)
         p.run
         p
       end
@@ -42,12 +42,12 @@ module Honcho
       case event
       when .finished?
         if process.mode.permanent?
-          process.run
+          restart_child(process)
         end
       when .exception?
         puts "restarting #{process.name}"
         if process.mode.permanent? || process.mode.transient?
-          process.run
+          restart_child(process)
         end
       end
     end
@@ -63,14 +63,22 @@ module Honcho
 
         @children.each do |_, p|
           next if p == process
+          p.kill if p.alive?
           if p.mode.permanent? || p.mode.transient?
-            p.restart if p.alive?
-          else
-            p.kill if p.alive?
+            restart_child(p)
           end
         end
 
         if process.mode.permanent? || process.mode.transient?
+          restart_child(process)
+        end
+      end
+    end
+
+
+    private def restart_child(process : Process)
+      if process.restart_delay > 0
+        delay(process.restart_delay) do
           process.run
         end
       end

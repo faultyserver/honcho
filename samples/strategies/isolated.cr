@@ -12,11 +12,11 @@ require "../../src/honcho.cr"
 
 # Since `ISOLATED` is the default strategy, this argument can be omitted. It is
 # simply added here for clarity in the example.
-sv = Honcho::Visor.new(strategy: Honcho::Strategy::ISOLATED)
+sv = Honcho::Visor.new(strategy: Honcho::Strategy::UNIFIED)
 
 puts "Starting ISOLATED strategy example. Press Ctrl+C to exit."
 
-sv.start_supervised("permanent service", Honcho::ProcessMode::PERMANENT) do
+sv.start_supervised("permanent service", mode: Honcho::ProcessMode::PERMANENT, delay: 3.0) do
   puts "permanent service running. will never go down"
   i = 1
   loop do
@@ -26,13 +26,13 @@ sv.start_supervised("permanent service", Honcho::ProcessMode::PERMANENT) do
   end
 end
 
-sv.start_supervised("broken service", Honcho::ProcessMode::PERMANENT) do
+sv.start_supervised("broken service", mode: Honcho::ProcessMode::PERMANENT) do
   sleep(1)
   puts "broken service going down. will restart."
   raise "exit abnormally"
 end
 
-sv.start_supervised("one shot service", Honcho::ProcessMode::ONE_SHOT) do
+sv.start_supervised("one shot service", mode: Honcho::ProcessMode::ONE_SHOT) do
   sleep(5)
   puts "one shot service going down. will not restart"
   raise "exit abnormally"
