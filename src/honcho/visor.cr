@@ -45,7 +45,6 @@ module Honcho
           restart_child(process)
         end
       when .exception?
-        puts "restarting #{process.name}"
         if process.mode.permanent? || process.mode.transient?
           restart_child(process)
         end
@@ -59,8 +58,6 @@ module Honcho
           process.run
         end
       when .exception?
-        puts "restarting #{process.name}"
-
         @children.each do |_, p|
           next if p == process
           p.kill if p.alive?

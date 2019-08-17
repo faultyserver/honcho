@@ -12,7 +12,7 @@ require "../../src/honcho.cr"
 
 # Since `ISOLATED` is the default strategy, this argument can be omitted. It is
 # simply added here for clarity in the example.
-sv = Honcho::Visor.new(strategy: Honcho::Strategy::UNIFIED)
+sv = Honcho::Visor.new(strategy: Honcho::Strategy::ISOLATED)
 
 puts "Starting ISOLATED strategy example. Press Ctrl+C to exit."
 

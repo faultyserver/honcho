@@ -4,6 +4,8 @@ Honcho is an in-application process supervisor for Crystal, inspired by [erlang'
 
 **This project is still _very_ early in development. It should be usable, but lacks proper testing and many features. Use at your own discretion.**
 
+Honcho is up-to-date as of Crystal 0.30.1 (released August 12th, 2019). Since this library relies on some internal behaviors, it is not guaranteed to work with future versions without an update to itself.
+
 
 # Notes
 
