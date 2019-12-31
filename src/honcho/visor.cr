@@ -20,7 +20,6 @@ module Honcho
         end
     end
 
-
     def start_supervised(name : String, **options, &block)
       @children[name] = begin
         p = Process.new(name, bus, **options, &block)
@@ -72,12 +71,13 @@ module Honcho
       end
     end
 
-
     private def restart_child(process : Process)
       if process.restart_delay > 0
         delay(process.restart_delay) do
           process.run
         end
+      else
+        process.run
       end
     end
   end

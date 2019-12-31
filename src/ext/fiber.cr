@@ -1,11 +1,16 @@
 class Fiber
   property? alive : Bool = true
 
+  # This is literally just the ensure block of `Fiber.run`
   def kill
-    Fiber.stack_pool.release(@stack)
+    {% if flag?(:preview_mt) %}
+      Crystal::Scheduler.enqueue_free_stack @stack
+    {% else %}
+      Fiber.stack_pool.release(@stack)
+    {% end %}
 
     # Remove the current fiber from the linked list
-    @@fibers.delete(self)
+    Fiber.fibers.delete(self)
 
     # Delete the resume event if it was used by `yield` or `sleep`
     @resume_event.try &.free
