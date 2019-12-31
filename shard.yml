@@ -1,5 +1,5 @@
 name: honcho
-version: 0.1.0
+version: 0.3.0
 crystal: 0.32.1
 description: |
   A fiber/process supervisor for Crystal, inspired by Erlang/Elixir's supervisor module.
